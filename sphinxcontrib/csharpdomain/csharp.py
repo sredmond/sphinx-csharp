@@ -492,6 +492,15 @@ class CSharpClassVar(CSharpObject):
         return self.get_fullname(name)
 
 
+class CSharpInterface(CSharpObject):
+    """Description of a C# interface."""
+    def handle_signature(self, sig, signode):
+        typ, _, _ = parse_type_signature(sig)
+        desc_name = 'interface %s' % sig
+        signode += addnodes.desc_name(desc_name, desc_name)
+        return self.get_fullname(typ)
+
+
 class CSharpXRefRole(XRefRole):
     def process_link(self, env, refnode, has_explicit_title, title, target):
         refnode['csharp:parent'] = env.ref_context.get('csharp:parent')
@@ -513,6 +522,7 @@ class CSharpDomain(Domain):
         'attribute': ObjType(_('attribute'), 'attr'),
         'indexer':   ObjType(_('indexer'), 'idxr'),
         'variable':  ObjType(_('variable'), 'cvar'),
+        'interface':  ObjType(_('interface'), 'ifac'),
     }
     directives = {
         'namespace': CSharpCurrentNamespace,
@@ -525,6 +535,7 @@ class CSharpDomain(Domain):
         'attribute': CSharpAttribute,
         'indexer':   CSharpIndexer,
         'variable':  CSharpClassVar,
+        'interface': CSharpInterface,
     }
     roles = {
         'type': CSharpXRefRole(),
@@ -534,6 +545,7 @@ class CSharpDomain(Domain):
         'attr': CSharpXRefRole(),
         'idxr': CSharpXRefRole(),
         'cvar': CSharpXRefRole(),
+        'ifac': CSharpXRefRole(),
     }
     initial_data = {
         'objects': {},  # fullname -> docname, objtype
