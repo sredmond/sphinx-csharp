@@ -552,6 +552,3 @@ class CSharpDomain(Domain):
                          target, node, contnode):
         raise NotImplementedError
 
-
-def setup(app):
-    app.add_domain(CSharpDomain)
