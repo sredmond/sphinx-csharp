@@ -292,7 +292,7 @@ class CSharpObject(ObjectDescription):
             return
         for modifier in modifiers:
             signode += nodes.emphasis(modifier, modifier)
-            signode += nodes.Text(u' ')
+            signode += nodes.Text(' ')
 
     def append_type(self, node, typ):
         typ, generic_types, is_array = parse_type_signature(typ)
@@ -323,10 +323,10 @@ class CSharpObject(ObjectDescription):
             self.append_modifiers(pnode, param.modifiers)
 
             self.append_type(pnode, param.typ)
-            pnode += nodes.Text(u' ')
+            pnode += nodes.Text(' ')
             pnode += nodes.emphasis(param.name, param.name)
             if param.default is not None:
-                default = u' = ' + param.default
+                default = ' = ' + param.default
                 pnode += nodes.emphasis(default, default)
             pnodes += pnode
         node += pnodes
@@ -337,10 +337,10 @@ class CSharpObject(ObjectDescription):
 
         for param in params:
             if pnodes.children:
-                pnodes += nodes.Text(u', ')
+                pnodes += nodes.Text(', ')
 
             self.append_type(pnodes, param.typ)
-            pnodes += nodes.Text(u' ')
+            pnodes += nodes.Text(' ')
             pnodes += nodes.emphasis(param.name, param.name)
 
         pnodes += nodes.Text(']')
