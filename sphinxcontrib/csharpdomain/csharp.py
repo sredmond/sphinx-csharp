@@ -33,6 +33,8 @@ PARAM_SIG_RE = re.compile(
     r')\s+)*)([^\s]+)\s+([^\s]+)\s*(=\s*(.+))?$')
 TYPE_SIG_RE = re.compile(r'^([^\s<\[]+)\s*(<.+>)?\s*(\[\])?$')
 ATTR_SIG_RE = re.compile(r'^([^\s]+)(\s+\((.*)\))?$')
+CVAR_SIG_RE = re.compile(r'^((?:(?:' + MODIFIERS_RE +
+    r')\s+)*)([^\s]+)\s+([^\s]+)\s*(?:=\s*(.+))?$')
 ParamTuple = namedtuple('ParamTuple', ['name', 'typ', 'default', 'modifiers'])
 
 
@@ -147,6 +149,15 @@ def parse_attr_signature(sig):
     else:
         params = []
     return (name, params)
+
+
+def parse_cvar_signature(sig):
+    """ Parse an attribute signature """
+    match = CVAR_SIG_RE.match(sig.strip())
+    if not match:
+        raise RuntimeError('Class variable signature invalid, got ' + sig)
+    typ, name, default = match.groups()
+    return typ, name, default
 
 
 MSDN_VALUE_TYPES = {
@@ -466,6 +477,21 @@ class CSharpAttribute(CSharpObject):
         return self.get_fullname(name)
 
 
+class CSharpClassVar(CSharpObject):
+    """Description of a C# class variable."""
+    def handle_signature(self, sig, signode):
+        typ, name, default = parse_cvar_signature(sig)
+
+        self.append_type(signode, typ)
+        signode += nodes.Text(' ')
+        signode += addnodes.desc_name(name, name)
+        if default:
+            extra = '= ' + str(default)
+            signode += addnodes.desc_annotation(extra, extra)
+
+        return self.get_fullname(name)
+
+
 class CSharpXRefRole(XRefRole):
     def process_link(self, env, refnode, has_explicit_title, title, target):
         refnode['csharp:parent'] = env.ref_context.get('csharp:parent')
@@ -486,6 +512,7 @@ class CSharpDomain(Domain):
         'value':     ObjType(_('value'), 'enum'),
         'attribute': ObjType(_('attribute'), 'attr'),
         'indexer':   ObjType(_('indexer'), 'idxr'),
+        'variable':  ObjType(_('variable'), 'cvar'),
     }
     directives = {
         'namespace': CSharpCurrentNamespace,
@@ -497,6 +524,7 @@ class CSharpDomain(Domain):
         'value':     CSharpEnumValue,
         'attribute': CSharpAttribute,
         'indexer':   CSharpIndexer,
+        'variable':  CSharpClassVar,
     }
     roles = {
         'type': CSharpXRefRole(),
@@ -505,6 +533,7 @@ class CSharpDomain(Domain):
         'enum': CSharpXRefRole(),
         'attr': CSharpXRefRole(),
         'idxr': CSharpXRefRole(),
+        'cvar': CSharpXRefRole(),
     }
     initial_data = {
         'objects': {},  # fullname -> docname, objtype
