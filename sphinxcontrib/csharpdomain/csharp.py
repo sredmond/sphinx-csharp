@@ -25,8 +25,8 @@ PROP_SIG_RE = re.compile(
     r'^([^\s]+\s+)*([^\s]+)\s+([^\s]+)\s*\{\s*(get;)?\s*(set;)?\s*\}$')
 IDXR_SIG_RE = re.compile(
     r'^((?:(?:' + MODIFIERS_RE +
-    r')\s+)*)([^\s]+)\s*this\s*\[\s*((?:[^\s]+)\s+(?:[^\s]+)' +
-    r'(?:\s*,\s*(?:[^\s]+)\s+(?:[^\s]+))*)\s*\]\s*' +
+    r')\s+)*)([^\s]+)\s*((?:[^\s].)*this\s*\[\s*((?:[^\s]+)\s+(?:[^\s]+)' +
+    r'(?:\s*,\s*(?:[^\s]+)\s+(?:[^\s]+))*)\s*\])\s*' +
     r'\{\s*(get;)?\s*(set;)?\s*\}$')
 PARAM_SIG_RE = re.compile(
     r'^((?:(?:' + PARAM_MODIFIERS_RE +
@@ -429,13 +429,13 @@ class CSharpIndexer(CSharpObject):
     """ Description of a C# indexer """
 
     def handle_signature(self, sig, signode):
-        modifiers, typ, params, getter, setter = parse_indexer_signature(sig)
+        modifiers, typ, name, params, getter, setter = parse_indexer_signature(sig)
         self.append_modifiers(signode, modifiers)
         self.append_type(signode, typ)
         signode += nodes.Text(' ')
-        signode += addnodes.desc_name('this[]', 'this')
+        signode += addnodes.desc_name(name + '[]', name)
         self.append_indexer_parameters(signode, params)
-        signode += nodes.Text(' { ')
+        signode += nodes.Text('{ ')
         extra = []
         if getter:
             extra.append('get;')
@@ -444,7 +444,7 @@ class CSharpIndexer(CSharpObject):
         extra_str = ' '.join(extra)
         signode += addnodes.desc_annotation(extra_str, extra_str)
         signode += nodes.Text(' }')
-        return self.get_fullname('this[]')
+        return self.get_fullname(name)
 
 
 class CSharpEnum(CSharpObject):
